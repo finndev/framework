@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Exception;
 use Foo\Bar\EloquentModelNamespacedStub;
+use Illuminate\Contracts\Database\Eloquent\CastsInboundAttributes;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -531,10 +532,6 @@ class DatabaseEloquentModelTest extends TestCase
 
     public function testFromDateTimeMilliseconds()
     {
-        if (version_compare(PHP_VERSION, '7.3.0-dev', '<')) {
-            $this->markTestSkipped('Due to https://bugs.php.net/bug.php?id=75577, proper "v" format support can only works since PHP 7.3.');
-        }
-
         $model = $this->getMockBuilder('Illuminate\Tests\Database\EloquentDateModelStub')->setMethods(['getDateFormat'])->getMock();
         $model->expects($this->any())->method('getDateFormat')->willReturn('Y-m-d H:s.vi');
         $model->setRawAttributes([
@@ -1799,7 +1796,7 @@ class DatabaseEloquentModelTest extends TestCase
         $this->assertArrayNotHasKey('foo', $model->getCasts());
 
         $model->mergeCasts(['foo' => 'date']);
-        $this->assertEquals($castCount + 1, count($model->getCasts()));
+        $this->assertCount($castCount + 1, $model->getCasts());
         $this->assertArrayHasKey('foo', $model->getCasts());
     }
 
@@ -1990,12 +1987,6 @@ class DatabaseEloquentModelTest extends TestCase
         );
     }
 
-    /**
-     * Test that the getOriginal method on an Eloquent model also uses the casts array.
-     *
-     * @param void
-     * @return void
-     */
     public function testGetOriginalCastsAttributes()
     {
         $model = new EloquentModelCastingStub();
@@ -2067,6 +2058,14 @@ class DatabaseEloquentModelTest extends TestCase
 
         $this->assertEquals(['foo' => 'bar'], $model->getOriginal('collectionAttribute')->toArray());
         $this->assertEquals(['foo' => 'bar2'], $model->getAttribute('collectionAttribute')->toArray());
+    }
+
+    public function testUnsavedModel()
+    {
+        $user = new UnsavedModel;
+        $user->name = null;
+
+        $this->assertNull($user->name);
     }
 }
 
@@ -2492,4 +2491,17 @@ class EloquentModelWithUpdatedAtNull extends Model
 {
     protected $table = 'stub';
     const UPDATED_AT = null;
+}
+
+class UnsavedModel extends Model
+{
+    protected $casts = ['name' => Uppercase::class];
+}
+
+class Uppercase implements CastsInboundAttributes
+{
+    public function set($model, string $key, $value, array $attributes)
+    {
+        return is_string($value) ? strtoupper($value) : $value;
+    }
 }

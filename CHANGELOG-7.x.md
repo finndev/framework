@@ -1,9 +1,88 @@
 # Release Notes for 7.x
 
-## [Unreleased](https://github.com/laravel/framework/compare/v7.3.0...7.x)
+## [Unreleased](https://github.com/laravel/framework/compare/v7.5.2...7.x)
+
+### Added
+- Added `Collection::until()` method ([#32262](https://github.com/laravel/framework/pull/32262))
+- Added `HtmlString::isEmpty()` method ([#32289](https://github.com/laravel/framework/pull/32289), [#32300](https://github.com/laravel/framework/pull/32300))
+- Added `Illuminate\Support\Stringable::isNotEmpty()` method ([#32293](https://github.com/laravel/framework/pull/32293))
+- Added `ltrim()` and `rtrim()` methods to `Illuminate\Support\Stringable` class ([#32288](https://github.com/laravel/framework/pull/32288))
+
+### Changed
+- Added default value to `HtmlString` constructor ([#32290](https://github.com/laravel/framework/pull/32290))
+
+### TODO
+- call setlocale ([1c6a504](https://github.com/laravel/framework/commit/1c6a50424c5558782a55769a226ab834484282e1))
+- Use a map to prevent unnecessary array access ([#32296](https://github.com/laravel/framework/pull/32296))
+- Prevent timestamp update when pivot is not dirty ([#32311](https://github.com/laravel/framework/pull/32311))
+- Add support for the new composer installed.json format ([#32310](https://github.com/laravel/framework/pull/32310))
+- Fix CURRENT_TIMESTAMP precision bug ([#32298](https://github.com/laravel/framework/pull/32298))
+- ValidatesAttributes::validateUrl use Symfony/Validator 5.0.7 regex ([#32315](https://github.com/laravel/framework/pull/32315))
+- Add uuid change support in migrations ([#32316](https://github.com/laravel/framework/pull/32316))
+- Allow store resource into postgresql bytea ([#32319](https://github.com/laravel/framework/pull/32319))
+
+
+## [v7.5.2 (2020-04-08)](https://github.com/laravel/framework/compare/v7.5.1...v7.5.2)
+
+### Fixed
+- Prevent insecure characters in locale ([c248521](https://github.com/laravel/framework/commit/c248521f502c74c6cea7b0d221639d4aa752d5db))
+
+### Optimization
+- Optimize `Arr::set()` method ([#32282](https://github.com/laravel/framework/pull/32282))
+
+
+## [v7.5.1 (2020-04-07)](https://github.com/laravel/framework/compare/v7.5.0...v7.5.1)
+
+### Fixed
+- Fixed Check a request header with an array value in `Illuminate\Http\Client\Request::hasHeader()` ([#32274](https://github.com/laravel/framework/pull/32274))
+- Fixed setting mail header ([#32272](https://github.com/laravel/framework/pull/32272))
+
+
+## [v7.5.0 (2020-04-07)](https://github.com/laravel/framework/compare/v7.4.0...v7.5.0)
+
+### Added
+- Added `assertNotSent()` and `assertNothingSent()` methods to  `Illuminate\Http\Client\Factory` ([#32197](https://github.com/laravel/framework/pull/32197))
+- Added enum support for `renameColumn()` ([#32205](https://github.com/laravel/framework/pull/32205))
+- Support returning an instance of a caster ([#32225](https://github.com/laravel/framework/pull/32225))
+
+### Fixed
+- Prevent long URLs from breaking email layouts ([#32189](https://github.com/laravel/framework/pull/32189))
+- Fixed camel casing relationship ([#32217](https://github.com/laravel/framework/pull/32217))
+- Fixed merging boolean or null attributes in Blade components ([#32245](https://github.com/laravel/framework/pull/32245))
+- Fixed Console expectation assertion order ([#32258](https://github.com/laravel/framework/pull/32258))
+- Fixed `route` helper with custom binding key ([#32264](https://github.com/laravel/framework/pull/32264))
+- Fixed double slashes matching in UriValidator (fix inconsistencies between cached and none cached routes) ([#32260](https://github.com/laravel/framework/pull/32260))
+- Fixed setting mail header ([#32272](https://github.com/laravel/framework/pull/32272))
+
+### Optimization
+- Optimize `Container::resolve()` method ([#32194](https://github.com/laravel/framework/pull/32194))
+- Optimize performance for `data_get()` method ([#32192](https://github.com/laravel/framework/pull/32192))
+- Optimize `Str::startsWith()` ([#32243](https://github.com/laravel/framework/pull/32243))
+
+
+## [v7.4.0 (2020-03-31)](https://github.com/laravel/framework/compare/v7.3.0...v7.4.0)
 
 ### Added
 - Makes the stubs used for `make:policy` customizable ([#32040](https://github.com/laravel/framework/pull/32040), [9d36a36](https://github.com/laravel/framework/commit/9d36a369d377044d0f468d1f02fa317cbb93571f))
+- Implement `HigherOrderWhenProxy` for Collections ([#32148](https://github.com/laravel/framework/pull/32148))
+- Added `Illuminate\Testing\PendingCommand::expectsChoice()` ([#32139](https://github.com/laravel/framework/pull/32139))
+- Added support for default values for the "props" blade tag ([#32177](https://github.com/laravel/framework/pull/32177))
+- Added `Castable` interface ([#32129](https://github.com/laravel/framework/pull/32129), [9cbf908](https://github.com/laravel/framework/commit/9cbf908c218bba74fbf83a83740b5c9f21c13e4e), [651371a](https://github.com/laravel/framework/commit/651371a2a982c06654b4df9af56110b666b2157f))
+- Added the ability to remove orders from the query builder ([#32186](https://github.com/laravel/framework/pull/32186))
+
+### Fixed
+- Added missing return in the `PendingMailFake::sendNow()` and `PendingMailFake::send()` ([#32093](https://github.com/laravel/framework/pull/32093))
+- Fixed custom Model attributes casts ([#32118](https://github.com/laravel/framework/pull/32118))
+- Fixed route group prefixing ([#32135](https://github.com/laravel/framework/pull/32135), [870efef](https://github.com/laravel/framework/commit/870efef4c23ff7f151b6e1f267ac18951a3af2f1))
+- Fixed component class view reference ([#32132](https://github.com/laravel/framework/pull/32132))
+
+### Changed
+- Remove Swift Mailer bindings ([#32165](https://github.com/laravel/framework/pull/32165))
+- Publish console stub when running `stub:publish` command ([#32096](https://github.com/laravel/framework/pull/32096))
+- Publish rule stub when running `make:rule` command ([#32097](https://github.com/laravel/framework/pull/32097))
+- Adding the middleware.stub to the files that will be published when running php artisan `stub:publish` ([#32099](https://github.com/laravel/framework/pull/32099))
+- Adding the factory.stub to the files that will be published when running php artisan `stub:publish` ([#32100](https://github.com/laravel/framework/pull/32100))
+- Adding the seeder.stub to the files that will be published when running php artisan `stub:publish` ([#32122](https://github.com/laravel/framework/pull/32122))
 
 
 ## [v7.3.0 (2020-03-24)](https://github.com/laravel/framework/compare/v7.2.2...v7.3.0)

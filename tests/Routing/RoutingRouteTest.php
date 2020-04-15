@@ -193,6 +193,18 @@ class RoutingRouteTest extends TestCase
         $this->assertSame('caught', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
     }
 
+    public function testMiddlewareCanBeSkipped()
+    {
+        $router = $this->getRouter();
+        $router->aliasMiddleware('web', RoutingTestMiddlewareGroupTwo::class);
+
+        $router->get('foo/bar', ['middleware' => 'web', function () {
+            return 'hello';
+        }])->withoutMiddleware(RoutingTestMiddlewareGroupTwo::class);
+
+        $this->assertEquals('hello', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+    }
+
     public function testMiddlewareWorksIfControllerThrowsHttpResponseException()
     {
         // Before calling controller
@@ -455,7 +467,7 @@ class RoutingRouteTest extends TestCase
         $router->get('foo/{team}/{post}', [
             'middleware' => SubstituteBindings::class,
             'uses' => function (?RoutingTestUserModel $userFromContainer, RoutingTestTeamModel $team, $postId) {
-                $this->assertSame(null, $userFromContainer);
+                $this->assertNull($userFromContainer);
                 $this->assertInstanceOf(RoutingTestTeamModel::class, $team);
                 $this->assertSame('bar', $team->value);
                 $this->assertSame('baz', $postId);
@@ -1104,14 +1116,30 @@ class RoutingRouteTest extends TestCase
         $router = $this->getRouter();
         $router->group(['prefix' => 'foo', 'as' => 'Foo::'], function () use ($router) {
             $router->group(['prefix' => 'bar'], function () use ($router) {
-                $router->get('baz', ['as' => 'baz', function () {
+                $router->prefix('foz')->get('baz', ['as' => 'baz', function () {
                     return 'hello';
                 }]);
             });
         });
         $routes = $router->getRoutes();
         $route = $routes->getByName('Foo::baz');
-        $this->assertSame('foo/bar/baz', $route->uri());
+        $this->assertSame('foz/foo/bar/baz', $route->uri());
+    }
+
+    public function testNestedRouteGroupingPrefixing()
+    {
+        /*
+         * nested with layer skipped
+         */
+        $router = $this->getRouter();
+        $router->group(['prefix' => 'foo', 'as' => 'Foo::'], function () use ($router) {
+            $router->prefix('bar')->get('baz', ['as' => 'baz', function () {
+                return 'hello';
+            }]);
+        });
+        $routes = $router->getRoutes();
+        $route = $routes->getByName('Foo::baz');
+        $this->assertSame('bar/foo', $route->getAction('prefix'));
     }
 
     public function testRouteMiddlewareMergeWithMiddlewareAttributesAsStrings()
@@ -1598,6 +1626,23 @@ class RoutingRouteTest extends TestCase
         ]);
 
         $this->assertSame('1|test-slug', $router->dispatch(Request::create('foo/1/test-slug', 'GET'))->getContent());
+    }
+
+    public function testParentChildImplicitBindingsProperlyCamelCased()
+    {
+        $router = $this->getRouter();
+
+        $router->get('foo/{user}/{test_team:id}', [
+            'middleware' => SubstituteBindings::class,
+            'uses' => function (RoutingTestUserModel $user, RoutingTestTeamModel $testTeam) {
+                $this->assertInstanceOf(RoutingTestUserModel::class, $user);
+                $this->assertInstanceOf(RoutingTestTeamModel::class, $testTeam);
+
+                return $user->value.'|'.$testTeam->value;
+            },
+        ]);
+
+        $this->assertSame('1|4', $router->dispatch(Request::create('foo/1/4', 'GET'))->getContent());
     }
 
     public function testImplicitBindingsWithOptionalParameterWithExistingKeyInUri()
@@ -2106,6 +2151,11 @@ class RoutingTestUserModel extends Model
     public function posts()
     {
         return new RoutingTestPostModel;
+    }
+
+    public function testTeams()
+    {
+        return new RoutingTestTeamModel;
     }
 
     public function getRouteKeyName()

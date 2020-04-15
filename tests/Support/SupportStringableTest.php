@@ -51,6 +51,16 @@ class SupportStringableTest extends TestCase
         $this->assertSame('foo', (string) $this->stringable(' foo ')->trim());
     }
 
+    public function testLtrim()
+    {
+        $this->assertSame('foo ', (string) $this->stringable(' foo ')->ltrim());
+    }
+
+    public function testRtrim()
+    {
+        $this->assertSame(' foo', (string) $this->stringable(' foo ')->rtrim());
+    }
+
     public function testCanBeLimitedByWords()
     {
         $this->assertSame('Taylor...', (string) $this->stringable('Taylor Otwell')->words(1));
@@ -60,6 +70,12 @@ class SupportStringableTest extends TestCase
 
     public function testWhenEmpty()
     {
+        tap($this->stringable(), function ($stringable) {
+            $this->assertSame($stringable, $stringable->whenEmpty(function () {
+                //
+            }));
+        });
+
         $this->assertSame('empty', (string) $this->stringable()->whenEmpty(function () {
             return 'empty';
         }));
@@ -307,7 +323,7 @@ class SupportStringableTest extends TestCase
         $this->assertTrue($this->stringable($valueObject)->is('foo/bar/baz'));
         $this->assertTrue($this->stringable($valueObject)->is($patternObject));
 
-        //empty patterns
+        // empty patterns
         $this->assertFalse($this->stringable('test')->is([]));
     }
 

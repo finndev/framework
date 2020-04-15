@@ -3,7 +3,6 @@
 namespace Illuminate\Tests\Http;
 
 use Illuminate\Http\Client\Factory;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Str;
 use OutOfBoundsException;
@@ -30,6 +29,23 @@ class HttpClientTest extends TestCase
         $response = $this->factory->post('http://laravel.com/test-missing-page');
 
         $this->assertTrue($response->ok());
+    }
+
+    public function testResponseBodyCasting()
+    {
+        $this->factory->fake([
+            '*' => ['result' => ['foo' => 'bar']],
+        ]);
+
+        $response = $this->factory->get('http://foo.com/api');
+
+        $this->assertSame('{"result":{"foo":"bar"}}', $response->body());
+        $this->assertSame('{"result":{"foo":"bar"}}', (string) $response);
+        $this->assertIsArray($response->json());
+        $this->assertSame(['foo' => 'bar'], $response->json()['result']);
+        $this->assertSame(['foo' => 'bar'], $response['result']);
+        $this->assertIsObject($response->object());
+        $this->assertSame('bar', $response->object()->result->foo);
     }
 
     public function testUrlsCanBeStubbedByPath()
@@ -60,6 +76,7 @@ class HttpClientTest extends TestCase
 
         $this->factory->withHeaders([
             'X-Test-Header' => 'foo',
+            'X-Test-ArrayHeader' => ['bar', 'baz'],
         ])->post('http://foo.com/json', [
             'name' => 'Taylor',
         ]);
@@ -68,6 +85,7 @@ class HttpClientTest extends TestCase
             return $request->url() === 'http://foo.com/json' &&
                    $request->hasHeader('Content-Type', 'application/json') &&
                    $request->hasHeader('X-Test-Header', 'foo') &&
+                   $request->hasHeader('X-Test-ArrayHeader', ['bar', 'baz']) &&
                    $request['name'] === 'Taylor';
         });
     }
@@ -86,6 +104,27 @@ class HttpClientTest extends TestCase
                    $request->hasHeader('Content-Type', 'application/x-www-form-urlencoded') &&
                    $request['name'] === 'Taylor';
         });
+    }
+
+    public function testSpecificRequestIsNotBeingSent()
+    {
+        $this->factory->fake();
+
+        $this->factory->post('http://foo.com/form', [
+            'name' => 'Taylor',
+        ]);
+
+        $this->factory->assertNotSent(function (Request $request) {
+            return $request->url() === 'http://foo.com/form' &&
+                $request['name'] === 'Peter';
+        });
+    }
+
+    public function testNoRequestIsNotBeingSent()
+    {
+        $this->factory->fake();
+
+        $this->factory->assertNothingSent();
     }
 
     public function testCanSendMultipartData()
@@ -144,7 +183,6 @@ class HttpClientTest extends TestCase
                 ->pushStatus(403),
         ]);
 
-        /** @var PendingRequest */
         $response = $this->factory->get('https://example.com');
         $this->assertSame('Ok', $response->body());
         $this->assertSame(201, $response->status());
@@ -216,7 +254,7 @@ class HttpClientTest extends TestCase
 
         $this->assertCount(1, $response->cookies()->toArray());
 
-        /** @var CookieJarInterface $responseCookies */
+        /** @var \GuzzleHttp\Cookie\CookieJarInterface $responseCookies */
         $responseCookie = $response->cookies()->toArray()[0];
 
         $this->assertSame('foo', $responseCookie['Name']);

@@ -412,7 +412,7 @@ class Collection implements ArrayAccess, Enumerable
      */
     public function get($key, $default = null)
     {
-        if ($this->offsetExists($key)) {
+        if (array_key_exists($key, $this->items)) {
             return $this->items[$key];
         }
 
@@ -501,7 +501,7 @@ class Collection implements ArrayAccess, Enumerable
         $keys = is_array($key) ? $key : func_get_args();
 
         foreach ($keys as $value) {
-            if (! $this->offsetExists($value)) {
+            if (! array_key_exists($value, $this->items)) {
                 return false;
             }
         }
@@ -1214,7 +1214,7 @@ class Collection implements ArrayAccess, Enumerable
      * e.g. new Collection([1, 2, 3])->zip([4, 5, 6]);
      *      => [[1, 4], [2, 5], [3, 6]]
      *
-     * @param  mixed ...$items
+     * @param  mixed  ...$items
      * @return static
      */
     public function zip($items)
@@ -1293,7 +1293,7 @@ class Collection implements ArrayAccess, Enumerable
      */
     public function offsetExists($key)
     {
-        return array_key_exists($key, $this->items);
+        return isset($this->items[$key]);
     }
 
     /**
